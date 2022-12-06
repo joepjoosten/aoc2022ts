@@ -26,5 +26,5 @@ const solution = (round, shape) => flow(
 assert(15 === solution(round1, shape1)(example));
 assert(12 === solution(round2, shape2)(example));
 
-log("Solution day 1, part 1: " + solution(round1, shape1)(file))();
-log("Solution day 1, part 2: " + solution(round2, shape2)(file))();
+log("Solution day 2, part 1: " + solution(round1, shape1)(file))();
+log("Solution day 2, part 2: " + solution(round2, shape2)(file))();

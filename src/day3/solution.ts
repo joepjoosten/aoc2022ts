@@ -14,14 +14,14 @@ const example = readFileSync("./src/day3/example.txt", "utf-8");
 
 const chars = S.split('');
 const lines = flow(S.split('\n'), map(chars));
-const compartments = (s: ReadonlyNonEmptyArray<string>) => pipe(s, chunksOf(s.length / 2));
+const compartments = (s) => pipe(s, chunksOf(s.length / 2));
 
 const items = chars(' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'); //offset by space so a starts at index 1
 
-const countItem = (i: string) => flow(filter(s => s === i), size);
-const countItems = (vs: ReadonlyNonEmptyArray<string>) => (xs: ReadonlyArray<string>) => pipe(flow(map(countItem))(vs), map(x => x(xs)));
+const countItem = (i) => flow(filter(s => s === i), size);
+const countItems = (vs) => (xs) => pipe(flow(map(countItem))(vs), map(x => x(xs)));
 
-const solution = (n: number) => flow(
+const solution = (n) => flow(
   map(countItems(items)),
   chunksOf(n),
   map(flow(transpose, findIndex(every((x) => x > 0)))),
@@ -32,5 +32,5 @@ const solution = (n: number) => flow(
 assert(157 === flow(lines, map(compartments), flatten, solution(2))(example));
 assert(70 === flow(lines, solution(3))(example));
 
-log("Solution day 1, part 1: " +  flow(lines, map(compartments), flatten, solution(2))(file))();
-log("Solution day 1, part 2: " + flow(lines, solution(3))(file))();
+log("Solution day 3, part 1: " +  flow(lines, map(compartments), flatten, solution(2))(file))();
+log("Solution day 3, part 2: " + flow(lines, solution(3))(file))();

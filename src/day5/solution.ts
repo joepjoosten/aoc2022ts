@@ -18,12 +18,11 @@ const lines = S.split('\n');
 const separator = S.split('\n\n');
 
 const stackLines = flow(separator, fst, lines, dropRight(1));
-const movesLines = flow(separator, snd, lines);
-
 const parseStackLine = flow(chars, chunksOf(4), map(flow(lookup(1), chain(fromPredicate(s => s !== ' ')))));
-const parseMoveLine = flow(words, map(fromString), compact, ([move, from, to]) => [move, from - 1, to - 1] as [number, number, number]);
-
 const parseStack = flow(stackLines, map(parseStackLine), transpose, map(flow(compact, reverse)));
+
+const movesLines = flow(separator, snd, lines);
+const parseMoveLine = flow(words, map(fromString), compact, ([move, from, to]) => [move, from - 1, to - 1] as [number, number, number]);
 const parseMoves = flow(movesLines, map(parseMoveLine));
 
 const solve = (stack, crane: typeof reverse) => flow(

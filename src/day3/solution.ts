@@ -21,7 +21,7 @@ const items = chars(' abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'); //
 const countItem = (i) => flow(filter(s => s === i), size);
 const countItems = (vs) => (xs) => pipe(flow(map(countItem))(vs), map(x => x(xs)));
 
-const solution = (n) => flow(
+const solve = (n) => flow(
   map(countItems(items)),
   chunksOf(n),
   map(flow(transpose, findIndex(every((x) => x > 0)))),
@@ -29,8 +29,8 @@ const solution = (n) => flow(
   concatAll(N.SemigroupSum)
 )
 
-assert(157 === flow(lines, map(compartments), flatten, solution(2))(example));
-assert(70 === flow(lines, solution(3))(example));
+assert(157 === flow(lines, map(compartments), flatten, solve(2))(example));
+assert(70 === flow(lines, solve(3))(example));
 
-log("Solution day 3, part 1: " +  flow(lines, map(compartments), flatten, solution(2))(file))();
-log("Solution day 3, part 2: " + flow(lines, solution(3))(file))();
+log("Solution day 3, part 1: " +  flow(lines, map(compartments), flatten, solve(2))(file))();
+log("Solution day 3, part 2: " + flow(lines, solve(3))(file))();

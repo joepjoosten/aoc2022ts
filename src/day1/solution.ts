@@ -14,7 +14,7 @@ const example = readFileSync("./src/day1/example.txt", "utf-8");
 const groups = S.split('\n\n');
 const lines = S.split('\n');
 
-const solution = (take: number) => flow(
+const solve = (take: number) => flow(
   groups,
   map(flow(lines, map(Number), concatAll(N.SemigroupSum))),
   sort(ord.reverse(N.Ord)),
@@ -22,9 +22,9 @@ const solution = (take: number) => flow(
   concatAll(N.SemigroupSum)
 );
 
-assert(24000 === solution(1)(example));
-assert(45000 === solution(3)(example));
+assert(24000 === solve(1)(example));
+assert(45000 === solve(3)(example));
 
-log("Solution day 1, part 1: " + solution(1)(file))();
-log("Solution day 1, part 2: " + pipe(solution(3)(file)))();
+log("Solution day 1, part 1: " + solve(1)(file))();
+log("Solution day 1, part 2: " + pipe(solve(3)(file)))();
 

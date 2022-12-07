@@ -1,18 +1,14 @@
-import { assert } from 'console';
-import { traceWithValue } from 'fp-ts-std/Debug';
-import { head } from 'fp-ts-std/NonEmptyString';
+import { trace, traceWithValue } from 'fp-ts-std/Debug';
+import { fromString } from 'fp-ts-std/Number';
+import { transpose } from 'fp-ts-std/ReadonlyArray';
 import { log } from 'fp-ts/lib/Console';
 import { flow, pipe } from "fp-ts/lib/function";
-import { compact, dropRight, filter, partitionMap, size } from "fp-ts/lib/ReadonlyArray";
-import { bind, chunksOf, Do, flatten, map, reverse } from "fp-ts/lib/ReadonlyNonEmptyArray";
+import { fromPredicate, getOrElse, map as omap, compact as ocompact, flatten, some } from 'fp-ts/lib/Option';
+import { compact, concat, dropRight, lookup, modifyAt, reduce, takeLeft, takeRight } from "fp-ts/lib/ReadonlyArray";
+import { chunksOf, map, reverse } from "fp-ts/lib/ReadonlyNonEmptyArray";
 import { fst, snd } from 'fp-ts/lib/ReadonlyTuple';
 import * as S from "fp-ts/string";
-import * as N from "fp-ts/number";
-import * as E from "fp-ts/Either";
 import { readFileSync } from "fs";
-import { transpose } from 'fp-ts-std/ReadonlyArray';
-import { none, some } from 'fp-ts/lib/Option';
-import { fromString } from 'fp-ts-std/Number';
 
 const file = readFileSync("./src/day5/input.txt", "utf-8");
 const example = readFileSync("./src/day5/example.txt", "utf-8");
@@ -20,30 +16,26 @@ const example = readFileSync("./src/day5/example.txt", "utf-8");
 const chars = S.split('');
 const words = S.split(' ');
 const lines = S.split('\n');
+const separator = S.split('\n\n');
 
-const stackLines = (input) => pipe(input, S.split('\n\n'), fst, lines, dropRight(1));
-const movesLines = (input) => pipe(input, S.split('\n\n'), snd, lines);
+const stackLines = flow(separator, fst, lines, dropRight(1));
+const movesLines = flow(separator, snd, lines);
 
-const parseStackLine = flow(chars, chunksOf(4), map(stackItems => S.Eq.equals(stackItems[1], ' ') ? none : some(stackItems[1])));
-const parseMoveLine = flow(words, map(fromString), compact);
+const parseStackLine = flow(chars, chunksOf(4), map(flow(lookup(1), omap(fromPredicate(s => s !== ' ')))), compact);
+const parseMoveLine = flow(words, map(fromString), compact, ([move, from, to]) => [move, from - 1, to - 1]);
 
-const parseStack = (input: string) => pipe(stackLines(input), map(parseStackLine), transpose, map(flow(compact, reverse)));
-const parseMoves = (input: string) => pipe(movesLines(input), map(parseMoveLine));
+const parseStack = flow(stackLines, map(parseStackLine), transpose, map(flow(compact, reverse)));
+const parseMoves = flow(movesLines, map(parseMoveLine));
 
-const parse  = (input: string) => pipe(
-  Do,
-  bind('stack', () => pipe(
-    stackLines(input),
-    map(parseStackLine),
-    transpose,
-    map(flow(compact, reverse)),
-  )),
-  bind('moves', () => pipe(movesLines(input), map(parseMoveLine))),
+const solve = (stack) => reduce(some(stack), (s, [move, from, to]) => pipe(
+  s, 
+  traceWithValue(`move: ${move}, from: ${from}, to: ${to}`),
+  omap(modifyAt(to, concat(takeRight(move)(pipe(lookup(from)(pipe(s, getOrElse(() => []))), getOrElse(() => [])))))),
+  omap(modifyAt(from, takeLeft(move))),
+  traceWithValue("sss"),
+));
 
-  traceWithValue("parse"),
-)
-
-parse(example);
+log(solve(parseStack(example))(parseMoves(example)))();
 //assert(2 === flow(lines, solution)(example));
 //assert(4 === flow(lines, solution))(example));
 

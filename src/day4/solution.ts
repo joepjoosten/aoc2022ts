@@ -12,7 +12,7 @@ const example = readFileSync("./src/day4/example.txt", "utf-8");
 
 const lines = S.split('\n');
 
-const solution = (predicate) => flow(
+const solve = (predicate) => flow(
   map(flow(S.split(/[,-]/), map(Number))),
   filter(predicate),
   size
@@ -21,8 +21,8 @@ const solution = (predicate) => flow(
 const overlap = ([a1,a2,b1,b2]) => 0 >= ((a1-b1)*(a2-b2));
 const nooverlap = ([a1,a2,b1,b2]) => 0 >= ((a1-b2)*(a2-b1));
 
-assert(2 === flow(lines, solution(overlap))(example));
-assert(4 === flow(lines, solution(nooverlap))(example));
+assert(2 === flow(lines, solve(overlap))(example));
+assert(4 === flow(lines, solve(nooverlap))(example));
 
-log("Solution day 4, part 1: " + flow(lines, solution(overlap))(file))();
-log("Solution day 4, part 2: " + flow(lines, solution(nooverlap))(file))();
+log("Solution day 4, part 1: " + flow(lines, solve(overlap))(file))();
+log("Solution day 4, part 2: " + flow(lines, solve(nooverlap))(file))();

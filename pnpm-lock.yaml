@@ -3,6 +3,7 @@ lockfileVersion: 5.4
 specifiers:
   '@types/node': ^16.11.6
   fp-ts: ^2.13.1
+  fp-ts-contrib: ^0.1.29
   fp-ts-std: ^0.15.1
   monocle-ts: ^2.3.0
   newtype-ts: ^0.3.0
@@ -13,6 +14,7 @@ specifiers:
 dependencies:
   '@types/node': 16.18.4
   fp-ts: 2.13.1
+  fp-ts-contrib: 0.1.29_fp-ts@2.13.1
   fp-ts-std: 0.15.1_sddbbwftoqt3d5g3p7ix53ouca
   monocle-ts: 2.3.13_fp-ts@2.13.1
   newtype-ts: 0.3.5_y4ecnzjsatnzoei5elwf4wjeqa
@@ -139,6 +141,14 @@ packages:
   /escape-string-regexp/1.0.5:
     resolution: {integrity: sha512-vbRorB5FUQWvla16U8R/qgaFIya2qGzwDrNmCZuYKrbdSUMG6I1ZCGQRefkRVhuOkIGVne7BQ35DSfo1qvJqFg==}
     engines: {node: '>=0.8.0'}
+    dev: false
+
+  /fp-ts-contrib/0.1.29_fp-ts@2.13.1:
+    resolution: {integrity: sha512-y+f+xlZqYgj2t+Alu/oat10UC491PByvH7XrT0ITc/DbDJK7LDJLShZJy2orjE7PlcJkO5niDenc1A/woyeB/Q==}
+    peerDependencies:
+      fp-ts: ^2.1.2
+    dependencies:
+      fp-ts: 2.13.1
     dev: false
 
   /fp-ts-std/0.15.1_sddbbwftoqt3d5g3p7ix53ouca:

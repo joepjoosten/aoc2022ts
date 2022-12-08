@@ -28,10 +28,12 @@ const fileName = pipe(P.many1Till(PC.notSpace, PC.char('\n')), P.map(x => x.join
 const dir = PS.string('dir');
 const dirName = pipe(P.many1Till(PC.notSpace, PC.char('\n')), P.map(x => x.join('')));
 
-const fileOutput: P.Parser<string, {size: number, name: string}> = pipe(
-  fileSize,
-  P.bindTo('size'),
-  P.bind('name', () => whitespaceSurrounded(fileName)),
+const output: <L, R>(l: P.Parser<string, L>, r: P.Parser<string, R>) => P.Parser<string, {left: L, right: R}> = (l, r) => pipe(
+  l,
+  P.bindTo('left'),
+  P.chainFirst(() => PS.string(' ')),
+  P.bind('right', () => r),
+  P.map(({left, right}) => ({left, right}))
 )
 
 

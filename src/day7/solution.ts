@@ -15,6 +15,14 @@ import { alt, bind, bindTo, chain, chainFirst, many1, map, Parser, sepBy } from 
 import { stream } from "parser-ts/lib/Stream";
 import { string } from "parser-ts/lib/string";
 
+type Dir = {_tag: 'Dir', name: string};
+type CdRoot = {_tag: 'CdRoot'};
+type CdParent = {_tag: 'CdParent'};
+type Cd = {_tag: 'Cd', name: string};
+type Ls = {_tag: 'Ls' };
+type File = {_tag: 'File', name: string, size: number};
+type Model = Dir | CdRoot | CdParent | Cd | File | Ls;
+
 const file = readFileSync("./src/day7/input.txt", "utf-8");
 const example = readFileSync("./src/day7/example.txt", "utf-8");
 
@@ -36,14 +44,6 @@ const twoArgs: <First, Second>(first:Parser<string, First>, second:Parser<string
   chainFirst(() => string(' ')),
   bind('second', () => second)
 )
-
-type Dir = {_tag: 'Dir', name: string};
-type CdRoot = {_tag: 'CdRoot'};
-type CdParent = {_tag: 'CdParent'};
-type Cd = {_tag: 'Cd', name: string};
-type Ls = {_tag: 'Ls' };
-type File = {_tag: 'File', name: string, size: number};
-type Model = Dir | CdRoot | CdParent | Cd | File | Ls;
 
 const dirOutput: Parser<string, Model> = pipe(twoArgs(dir, dirName), map(({second}) => ({_tag: 'Dir', name: second})));
 const fileOutput: Parser<string, Model> = pipe(twoArgs(fileSize, fileName), map(({first, second}) => ({_tag: 'File', name: second, size: first})));

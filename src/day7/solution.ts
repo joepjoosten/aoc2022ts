@@ -1,11 +1,13 @@
-import { traceWithValue } from "fp-ts-std/Debug";
+import { assert } from "console";
+import { minimum } from 'fp-ts-std/Array';
 import { join } from 'fp-ts-std/ReadonlyArray';
 import { flow, pipe } from "fp-ts/function";
+import { log } from "fp-ts/lib/Console";
 import * as E from "fp-ts/lib/Either";
+import * as N from 'fp-ts/lib/number';
 import { toEntries } from "fp-ts/lib/ReadonlyRecord";
 import { snd } from "fp-ts/lib/ReadonlyTuple";
 import * as S from 'fp-ts/lib/String';
-import * as N from 'fp-ts/lib/number';
 import * as A from 'fp-ts/ReadonlyArray';
 import { readFileSync } from "fs";
 import * as PC from "parser-ts/lib/char";
@@ -59,37 +61,30 @@ const parseLine = pipe(
   P.alt((): P.Parser<string, Model> => commandLs),
 )
 
-const parseLines = pipe(
-  P.sepBy(PS.string('\n'), parseLine)
-)
+const sumDirs = (dirs: readonly (readonly [string, number])[]) => 
+  (cwd) => pipe(dirs, A.filter(([dir]) => S.startsWith(cwd)(dir)), A.map(snd), A.reduce(0, N.SemigroupSum.concat));
 
-const sumDirs = (dirs: readonly (readonly [string, number])[]) => (cwd) => pipe(dirs, A.filter(([dir]) => S.startsWith(cwd)(dir)), A.map(snd), A.reduce(0, N.SemigroupSum.concat));
-
-pipe(
-  example,
-  flow(chars, stream),
-  parseLines,
+const solve = flow(
+  chars, stream,  pipe(P.sepBy(PS.string('\n'), parseLine)),
   E.match(
     (e) => ({}),
-    (r) => A.reduce<Model, [Record<string, number>, string]>([{}, ''], ([dirs, cwd], command) => {
-      switch(command._tag) {
-        case 'CdRoot':   return [dirs, ''];
+    (r) => A.reduce<Model, [Record<string, number>, string]>([{}, '/'], ([dirs, cwd], model) => {
+      switch(model._tag) {
+        case 'CdRoot':   return [dirs, '/'];
         case 'CdParent': return [dirs, pipe(cwd, S.split('/'), A.dropRight(1), join('/'))];
-        case 'Cd':       return [dirs, `${cwd}/${command.name}`];
-        case 'File':     return [{...dirs, [cwd === '' ? '/' : cwd]: dirs[cwd] ?? 0 + command.size}, cwd];
+        case 'Cd':       return [dirs, `${cwd}/${model.name}`];
+        case 'Ls':       return [{...dirs, [cwd]: 0}, cwd];
+        case 'File':     return [{...dirs, [cwd]: dirs[cwd] + model.size}, cwd];
       }
       return [dirs, cwd]
     })(r.value)[0]
   ),
-  toEntries,
-  (entries) => pipe(entries, A.map(([key, _]) => ([key, sumDirs(entries)(key)])),
-  traceWithValue('dirs'),
+  toEntries<string, number>,
+  (entries) => pipe(entries, A.map(([key, _]) => (sumDirs(entries)(key))))
 )
 
+assert(95437 === pipe(example, solve, A.filter((size) => size <= 100_000), A.reduce(0, N.SemigroupSum.concat)));
+assert(24933642 === pipe(example, solve, ([head, ...tail]) => pipe(tail, A.filter((size) => size >= 30_000_000 - (70_000_000 - head))), minimum(N.Ord)));
 
-
-//assert(getEq(N.Eq).equals(some(10), solve(example)));
-//assert(getEq(N.Eq).equals(some(29), solve(14)(example)));
-
-//log("Solution day 7, part 1: " + pipe(solve(4)(file), getOrElse(() => -1)))();
-//log("Solution day 7, part 2: " + pipe(solve(14)(file), getOrElse(() => -1)))();
+log("Solution day 7, part 1: " + pipe(file, solve, A.filter((size) => size <= 100_000), A.reduce(0, N.SemigroupSum.concat)))();
+log("Solution day 7, part 1: " + pipe(file, solve, ([head, ...tail]) => pipe(tail, A.filter((size) => size >= 30_000_000 - (70_000_000 - head))), minimum(N.Ord)))();

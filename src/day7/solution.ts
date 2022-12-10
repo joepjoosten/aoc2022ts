@@ -10,31 +10,31 @@ import { snd } from "fp-ts/lib/ReadonlyTuple";
 import * as S from 'fp-ts/lib/String';
 import * as A from 'fp-ts/ReadonlyArray';
 import { readFileSync } from "fs";
-import * as PC from "parser-ts/lib/char";
-import * as P from "parser-ts/lib/Parser";
+import { char, digit, notSpace } from "parser-ts/lib/char";
+import { alt, bind, bindTo, chain, chainFirst, many1, map, Parser, sepBy } from "parser-ts/lib/Parser";
 import { stream } from "parser-ts/lib/Stream";
-import * as PS from "parser-ts/lib/string";
+import { string } from "parser-ts/lib/string";
 
 const file = readFileSync("./src/day7/input.txt", "utf-8");
 const example = readFileSync("./src/day7/example.txt", "utf-8");
 
 const chars = (s: string) => s.split('');
 
-const command = (p) => pipe(PC.char('$'), P.chain(() => PS.string(' ')), P.chain(() => p));
-const changeDir = PS.string('cd');
-const doubleDot = PS.string('..');
-const root = PS.string('/');
-const fileSize = pipe(PC.many1(PC.digit));
-const fileName = pipe(P.many1(PC.notSpace), P.map(x => x.join('')));
-const dir = PS.string('dir');
-const ls = PS.string('ls');
-const dirName = pipe(P.many1(PC.notSpace), P.map(x => x.join('')));
+const command = (p) => pipe(char('$'), chain(() => string(' ')), chain(() => p));
+const changeDir = string('cd');
+const doubleDot = string('..');
+const root = string('/');
+const fileSize = pipe(many1(digit), map(x => x.join('')), map(Number));
+const fileName = pipe(many1(notSpace),map(x => x.join('')));
+const dir = string('dir');
+const ls = string('ls');
+const dirName = pipe(many1(notSpace),map(x => x.join('')));
 
-const twoArgs: <First, Second>(first: P.Parser<string, First>, second: P.Parser<string, Second>) => P.Parser<string, {first: First, second: Second}> = (first, second) => pipe(
+const twoArgs: <First, Second>(first:Parser<string, First>, second:Parser<string, Second>) =>Parser<string, {first: First, second: Second}> = (first, second) => pipe(
   first,
-  P.bindTo('first'),
-  P.chainFirst(() => PS.string(' ')),
-  P.bind('second', () => second)
+  bindTo('first'),
+  chainFirst(() => string(' ')),
+  bind('second', () => second)
 )
 
 type Dir = {_tag: 'Dir', name: string};
@@ -45,27 +45,27 @@ type Ls = {_tag: 'Ls' };
 type File = {_tag: 'File', name: string, size: number};
 type Model = Dir | CdRoot | CdParent | Cd | File | Ls;
 
-const dirOutput: P.Parser<string, Dir> = pipe(twoArgs(dir, dirName), P.map(({second}) => ({_tag: 'Dir', name: second})));
-const fileOutput: P.Parser<string, File> = pipe(twoArgs(fileSize, fileName), P.map(({first, second}) => ({_tag: 'File', name: second, size: parseInt(first)})));
-const commandCdRoot: P.Parser<string, CdRoot> = pipe(command(twoArgs(changeDir, root)), P.map(() => ({_tag: 'CdRoot'})));
-const commandCdParent: P.Parser<string, CdParent> = pipe(command(twoArgs(changeDir, doubleDot)), P.map(() => ({_tag: 'CdParent'})));
-const commandCd: P.Parser<string, Cd> = pipe(command(twoArgs(changeDir, dirName)), P.map(({second}) => ({_tag: 'Cd', name: second})));
-const commandLs: P.Parser<string, Ls> = pipe(command(ls), P.map(() => ({_tag: 'Ls'})));
+const dirOutput: Parser<string, Model> = pipe(twoArgs(dir, dirName), map(({second}) => ({_tag: 'Dir', name: second})));
+const fileOutput: Parser<string, Model> = pipe(twoArgs(fileSize, fileName), map(({first, second}) => ({_tag: 'File', name: second, size: first})));
+const commandCdRoot: Parser<string, Model> = pipe(command(twoArgs(changeDir, root)), map(() => ({_tag: 'CdRoot'})));
+const commandCdParent: Parser<string, Model> = pipe(command(twoArgs(changeDir, doubleDot)),map(() => ({_tag: 'CdParent'})));
+const commandCd: Parser<string, Model> = pipe(command(twoArgs(changeDir, dirName)), map(({second}) => ({_tag: 'Cd', name: second})));
+const commandLs: Parser<string, Model> = pipe(command(ls), map(() => ({_tag: 'Ls'})));
 
 const parseLine = pipe(
-  fileOutput as P.Parser<string, Model>,
-  P.alt((): P.Parser<string, Model> => dirOutput),
-  P.alt((): P.Parser<string, Model> => commandCdRoot),
-  P.alt((): P.Parser<string, Model> => commandCdParent),
-  P.alt((): P.Parser<string, Model> => commandCd),
-  P.alt((): P.Parser<string, Model> => commandLs),
+  fileOutput,
+  alt(() => dirOutput),
+  alt(() => commandCdRoot),
+  alt(() => commandCdParent),
+  alt(() => commandCd),
+  alt(() => commandLs),
 )
 
-const sumDirs = (dirs: readonly (readonly [string, number])[]) => 
-  (cwd) => pipe(dirs, A.filter(([dir]) => S.startsWith(cwd)(dir)), A.map(snd), A.reduce(0, N.SemigroupSum.concat));
+const sumDirs = (dirs: readonly (readonly [string, number])[]) => (cwd) => 
+  pipe(dirs, A.filter(([dir]) => S.startsWith(cwd)(dir)), A.map(snd), A.reduce(0, N.SemigroupSum.concat));
 
 const solve = flow(
-  chars, stream,  pipe(P.sepBy(PS.string('\n'), parseLine)),
+  chars, stream,  pipe(sepBy(string('\n'), parseLine)),
   E.match(
     (e) => ({}),
     (r) => A.reduce<Model, [Record<string, number>, string]>([{}, '/'], ([dirs, cwd], model) => {

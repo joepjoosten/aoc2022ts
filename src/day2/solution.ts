@@ -1,4 +1,5 @@
 import { assert } from "console";
+import { lines } from "fp-ts-std/String";
 import { log } from "fp-ts/lib/Console";
 import { flow } from "fp-ts/lib/function";
 import { concatAll, map } from "fp-ts/lib/ReadonlyNonEmptyArray";
@@ -8,8 +9,6 @@ import { readFileSync } from "fs";
 
 const file = readFileSync("./src/day2/input.txt", "utf-8");
 const example = readFileSync("./src/day2/example.txt", "utf-8");
-
-const lines = S.split('\n');
 
 const round1 = (s: string) => /(A Y)|(B Z)|(C X)/.test(s) ? 6 : /(A X)|(B Y)|(C Z)/.test(s) ? 3 : 0;
 const shape1 = (s: string) => /X$/.test(s) ? 1 : /Y$/.test(s) ? 2 : 3;

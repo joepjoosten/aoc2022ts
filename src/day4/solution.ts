@@ -1,5 +1,6 @@
 import { assert } from 'console';
 import { traceWithValue } from 'fp-ts-std/Debug';
+import { lines } from 'fp-ts-std/String';
 import { log } from 'fp-ts/lib/Console';
 import { flow } from "fp-ts/lib/function";
 import { filter, size } from "fp-ts/lib/ReadonlyArray";
@@ -9,8 +10,6 @@ import { readFileSync } from "fs";
 
 const file = readFileSync("./src/day4/input.txt", "utf-8");
 const example = readFileSync("./src/day4/example.txt", "utf-8");
-
-const lines = S.split('\n');
 
 const solve = (predicate) => flow(
   map(flow(S.split(/[,-]/), map(Number))),

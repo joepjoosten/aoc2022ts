@@ -1,6 +1,7 @@
 import { assert } from 'console';
 import { fromString } from 'fp-ts-std/Number';
 import { join, transpose } from 'fp-ts-std/ReadonlyArray';
+import { lines, words } from 'fp-ts-std/String';
 import { log } from 'fp-ts/lib/Console';
 import { flow, pipe, identity } from "fp-ts/lib/function";
 import { chain, fromPredicate, getOrElse, map as omap } from 'fp-ts/lib/Option';
@@ -13,8 +14,6 @@ const file = readFileSync("./src/day5/input.txt", "utf-8");
 const example = readFileSync("./src/day5/example.txt", "utf-8");
 
 const chars = S.split('');
-const words = S.split(' ');
-const lines = S.split('\n');
 const separator = S.split('\n\n');
 
 const stackLines = flow(separator, fst, lines, dropRight(1));

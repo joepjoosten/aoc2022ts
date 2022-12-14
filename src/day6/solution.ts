@@ -1,10 +1,10 @@
 import { assert } from "console";
+import { aperture } from "fp-ts-std/ReadonlyArray";
 import { flow, pipe } from "fp-ts/function";
 import { log } from "fp-ts/lib/Console";
-import { left, right } from "fp-ts/lib/Either";
 import { getEq, getOrElse, map, some } from "fp-ts/lib/Option";
 import * as N from "fp-ts/number";
-import { chainRecDepthFirst, dropLeft, filter, findIndex, match, size, takeLeft, uniq } from "fp-ts/ReadonlyArray";
+import { findIndex, size, uniq } from "fp-ts/ReadonlyArray";
 import * as S from "fp-ts/string";
 import { readFileSync } from "fs";
 
@@ -13,11 +13,9 @@ const example = readFileSync("./src/day6/example.txt", "utf-8");
 
 const chars = S.split('');
 
-const sliding = (n: number, m: number = 1) => flow(chainRecDepthFirst(match(() => [], (xs) => [right(takeLeft(n)(xs)), left(dropLeft(m)(xs))])), filter((as: []) => size(as) === n));
-
 const solve = (distinctChars) => flow(
   chars,
-  sliding(distinctChars,1),
+  aperture(distinctChars),
   findIndex(xs => pipe(xs, uniq(S.Eq), size) === distinctChars),
   map(x => x + distinctChars)
 );

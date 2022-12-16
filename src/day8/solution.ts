@@ -21,7 +21,7 @@ const takeLeftWhileInclusive = <A>(predicate: (a: A) => boolean) => (as: readonl
 
 const parse = flow(lines, map(flow(chars, map(Number))));
 
-const viewFrom = (xs: readonly number[]) => mapWithIndex((i, x) => ([pipe(splitAt(i)(xs)[0], reverse), x, splitAt(i + 1)(xs)[1]] as [number[], number, number[]]))(xs)
+const viewFrom = <A>(xs: readonly A[]) => mapWithIndex((i, x) => ([pipe(splitAt(i)(xs)[0], reverse), x, splitAt(i + 1)(xs)[1]] as [A[], A, A[]]))(xs)
 const isSmaller = (x) => (y) => y < x;
 
 const isVisibleFromOutside = ([leftTrees, tree, rightTrees]) => pipe([leftTrees, rightTrees], map(every(isSmaller(tree))), concatAll(B.MonoidAny), B.match(() => 0, () => 1));

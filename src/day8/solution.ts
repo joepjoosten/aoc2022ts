@@ -1,12 +1,12 @@
 import { assert } from "console";
 import { traceWithValue } from "fp-ts-std/Debug";
-import { countBy, maximum, minimum, transpose } from "fp-ts-std/ReadonlyArray";
+import { allM, aperture, countBy, maximum, minimum, transpose } from "fp-ts-std/ReadonlyArray";
 import { lines } from "fp-ts-std/String";
 import { flip, flow, pipe } from "fp-ts/function";
 import { log } from "fp-ts/lib/Console";
 import { fst } from "fp-ts/lib/ReadonlyTuple";
 import * as N from "fp-ts/number";
-import { dropRight, filter, flap, flatten, map, mapWithIndex, matchLeft, reduce, reverse, size, splitAt, zip, zipWith } from "fp-ts/ReadonlyArray";
+import { dropRight, every, filter, flap, flatten, map, mapWithIndex, matchLeft, reduce, reverse, size, some, splitAt, zip, zipWith } from "fp-ts/ReadonlyArray";
 import * as S from "fp-ts/string";
 import { readFileSync } from "fs";
 
@@ -20,14 +20,15 @@ const flipFlap = flip(flap)
 
 const parse = flow(lines, map(flow(chars, map(Number))));
 
-const viewFrom = (xs) => mapWithIndex((i, _) => ([pipe(splitAt(i)(xs)[0], reverse), splitAt(i + 1)(xs)[1]]))(xs)
+const viewFrom = (xs: readonly number[]): [readonly number[], number, readonly number[]] => mapWithIndex((i, x) => ([pipe(splitAt(i)(xs)[0], reverse), x, splitAt(i + 1)(xs)[1]]))(xs)
+const smallerThen = (x) => (y) => y < x;
 
-pipe(example, parse, traceWithValue('input'), map(viewFrom), fst, traceWithValue("viewFrom"));
-
-const solve = (input) => pipe(
-    [input, transpose(input)],
-    flap(map(viewFrom)),
-    traceWithValue("viewFrom"),
+const solve = (input: readonly (readonly number[])[]) => pipe(
+    input,
+    map(viewFrom),
+    traceWithValue("views"),
+    map(map((([xs, y, zs]) => every(smallerThen(y))(xs) || every(smallerThen(y))(zs) ? 1 : 0))),
+    traceWithValue("parsed"),
 );
 
 solve(parse(example));

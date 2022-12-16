@@ -1,12 +1,14 @@
 import { assert } from "console";
 import { traceWithValue } from "fp-ts-std/Debug";
-import { allM, aperture, countBy, maximum, minimum, transpose } from "fp-ts-std/ReadonlyArray";
+import { allM, anyM, aperture, countBy, maximum, minimum, transpose } from "fp-ts-std/ReadonlyArray";
 import { lines } from "fp-ts-std/String";
+import * as B from "fp-ts/boolean";
 import { flip, flow, pipe } from "fp-ts/function";
 import { log } from "fp-ts/lib/Console";
+import { concatAll } from "fp-ts/lib/NonEmptyArray";
 import { fst } from "fp-ts/lib/ReadonlyTuple";
 import * as N from "fp-ts/number";
-import { dropRight, every, filter, flap, flatten, map, mapWithIndex, match, reduce, reverse, size, some, splitAt, zip, zipWith } from "fp-ts/ReadonlyArray";
+import { dropRight, every, filter, findFirst, flap, flatten, map, mapWithIndex, match, matchLeft, reduce, reverse, size, some, splitAt, takeLeftWhile, zip, zipWith } from "fp-ts/ReadonlyArray";
 import * as S from "fp-ts/string";
 import { readFileSync } from "fs";
 
@@ -14,17 +16,16 @@ const file = readFileSync("./src/day8/input.txt", "utf-8");
 const example = readFileSync("./src/day8/example.txt", "utf-8");
 
 const chars = S.split('');
-const wrap = fy => fx => flow(fy, fx, fy);
 const flipZipWith = <A, B, C>(f: (a: A, b: B) => C) => (fa: readonly A[], fb: readonly B[]) => zipWith<A,B,C>(fa, fb, f)
-const flipFlap = flip(flap)
+const takeLeftWhileInclusive = <A>(predicate: (a: A) => boolean) => (as: readonly A[]) => matchLeft<A[],A>(() => [], (x, xs) => [x, ...(predicate(x) ? [...takeLeftWhileInclusive(predicate)(xs)] : [])])(as)
 
 const parse = flow(lines, map(flow(chars, map(Number))));
 
 const viewFrom = (xs: readonly number[]) => mapWithIndex((i, x) => ([pipe(splitAt(i)(xs)[0], reverse), x, splitAt(i + 1)(xs)[1]] as [number[], number, number[]]))(xs)
-const smallerThen = (x) => (y) => y < x;
+const isSmaller = (x) => (y) => y < x;
 
-const isVisibleFromOutside = ([xs, y, zs]) => every(smallerThen(y))(xs) || every(smallerThen(y))(zs) ? 1 : 0;
-const scenisScore = ([xs, y, zs]) => 
+const isVisibleFromOutside = ([leftTrees, tree, rightTrees]) => pipe([leftTrees, rightTrees], map(every(isSmaller(tree))), concatAll(B.MonoidAny), B.match(() => 0, () => 1));
+const scenisScore = ([leftTrees, tree, rightTrees]) => pipe([leftTrees, rightTrees], map(flow(takeLeftWhileInclusive(isSmaller(tree)), size)), concatAll(N.MonoidProduct))
 
 const singleDirection = (f: (xs: [number[], number, number[]]) => number) => flow(
     map(viewFrom),
@@ -37,7 +38,7 @@ const solve = (f, g) => (input: readonly (readonly number[])[]) => pipe(
 );
 
 assert(21 === pipe(parse(example), solve(isVisibleFromOutside, ([x, y]) => x === 1 || y === 1 ? 1 : 0), flatten, filter(x => x === 1), size));
-//assert(getEq(N.Eq).equals(some(29), solve(14)(example)));
+assert(8 === pipe(example, parse, solve(scenisScore, ([x, y]) => x * y), flatten, maximum(N.Ord)));
 
 log("Solution day 8, part 1: " + pipe(parse(file), solve(isVisibleFromOutside, ([x, y]) => x === 1 || y === 1 ? 1 : 0), flatten, filter(x => x === 1), size))();
-//log("Solution day 8, part 2: " + pipe(solve(14)(file), getOrElse(() => -1)))();
+log("Solution day 8, part 2: " + pipe(file, parse, solve(scenisScore, ([x, y]) => x * y), flatten, maximum(N.Ord)))();

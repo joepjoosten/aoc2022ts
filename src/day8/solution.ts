@@ -1,14 +1,12 @@
 import { assert } from "console";
-import { traceWithValue } from "fp-ts-std/Debug";
-import { allM, anyM, aperture, countBy, maximum, minimum, transpose } from "fp-ts-std/ReadonlyArray";
+import { maximum, transpose } from "fp-ts-std/ReadonlyArray";
 import { lines } from "fp-ts-std/String";
 import * as B from "fp-ts/boolean";
-import { flip, flow, pipe } from "fp-ts/function";
+import { flow, pipe } from "fp-ts/function";
 import { log } from "fp-ts/lib/Console";
 import { concatAll } from "fp-ts/lib/NonEmptyArray";
-import { fst } from "fp-ts/lib/ReadonlyTuple";
 import * as N from "fp-ts/number";
-import { dropRight, every, filter, findFirst, flap, flatten, map, mapWithIndex, match, matchLeft, reduce, reverse, size, some, splitAt, takeLeftWhile, zip, zipWith } from "fp-ts/ReadonlyArray";
+import { every, filter, flatten, map, mapWithIndex, matchLeft, reverse, size, splitAt, zip, zipWith } from "fp-ts/ReadonlyArray";
 import * as S from "fp-ts/string";
 import { readFileSync } from "fs";
 

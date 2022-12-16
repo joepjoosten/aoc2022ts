@@ -25,7 +25,7 @@ const viewFrom = <A>(xs: readonly A[]) => mapWithIndex((i, x) => ([pipe(splitAt(
 const isSmaller = (x) => (y) => y < x;
 
 const isVisibleFromOutside = ([leftTrees, tree, rightTrees]) => pipe([leftTrees, rightTrees], map(every(isSmaller(tree))), concatAll(B.MonoidAny), B.match(() => 0, () => 1));
-const scenisScore = ([leftTrees, tree, rightTrees]) => pipe([leftTrees, rightTrees], map(flow(takeLeftWhileInclusive(isSmaller(tree)), size)), concatAll(N.MonoidProduct))
+const scenicScore = ([leftTrees, tree, rightTrees]) => pipe([leftTrees, rightTrees], map(flow(takeLeftWhileInclusive(isSmaller(tree)), size)), concatAll(N.MonoidProduct))
 
 const singleDirection = (f: (xs: [number[], number, number[]]) => number) => flow(
     map(viewFrom),
@@ -38,7 +38,7 @@ const solve = (f, g) => (input: readonly (readonly number[])[]) => pipe(
 );
 
 assert(21 === pipe(parse(example), solve(isVisibleFromOutside, ([x, y]) => x === 1 || y === 1 ? 1 : 0), flatten, filter(x => x === 1), size));
-assert(8 === pipe(example, parse, solve(scenisScore, ([x, y]) => x * y), flatten, maximum(N.Ord)));
+assert(8 === pipe(example, parse, solve(scenicScore, ([x, y]) => x * y), flatten, maximum(N.Ord)));
 
 log("Solution day 8, part 1: " + pipe(parse(file), solve(isVisibleFromOutside, ([x, y]) => x === 1 || y === 1 ? 1 : 0), flatten, filter(x => x === 1), size))();
-log("Solution day 8, part 2: " + pipe(file, parse, solve(scenisScore, ([x, y]) => x * y), flatten, maximum(N.Ord)))();
+log("Solution day 8, part 2: " + pipe(file, parse, solve(scenicScore, concatAll(N.MonoidProduct)), flatten, maximum(N.Ord)))();
